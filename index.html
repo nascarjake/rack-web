@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Rack & Ruin</title>
+    <link rel="icon" type="image/png" href="./build-resources/icon.png">
+    <link rel="preload" href="./src/assets/branding/goose-games-logo.png" as="image" fetchpriority="high">
+    <link rel="preload" href="./src/assets/Assets/table.png" as="image">
+    <link rel="preload" href="./src/assets/fonts/cabin-sketch-700-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <link rel="preload" href="./src/assets/fonts/vt323-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+    <meta name="theme-color" content="#050706">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Rack & Ruin">
+    <script src="./src/vendor/Tone.js" defer></script>
+    <link rel="stylesheet" href="./src/styles/fonts.css">
+    <link rel="stylesheet" href="./src/styles/game.css?v=player-settings-v2">
+</head>
+<body data-theme="chalkboard">
+    <section id="studio-splash" class="studio-splash">
+        <img src="./src/assets/branding/goose-games-logo.png" alt="Goose Games">
+    </section>
+    <section id="desktop-title-screen" class="desktop-title-screen" aria-label="Rack and Ruin title screen">
+        <div class="desktop-title-frame" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+        <div class="desktop-title-ambient" aria-hidden="true">
+            <span class="desktop-title-light"></span>
+            <span class="desktop-title-dust dust-near"></span>
+            <span class="desktop-title-dust dust-far"></span>
+            <span class="desktop-title-streak streak-a"></span>
+            <span class="desktop-title-streak streak-b"></span>
+            <img class="desktop-title-fly-ball title-ball-3" src="./src/assets/Assets/svgs/ball_3.svg" alt="">
+            <img class="desktop-title-fly-ball title-ball-7" src="./src/assets/Assets/svgs/ball_7.svg" alt="">
+            <img class="desktop-title-fly-ball title-ball-9" src="./src/assets/Assets/svgs/ball_9.svg" alt="">
+            <img class="desktop-title-fly-ball title-ball-14" src="./src/assets/Assets/svgs/ball_14.svg" alt="">
+        </div>
+        <button id="desktop-title-start" class="desktop-title-start" type="button" aria-label="Start Rack and Ruin">
+            <span class="desktop-title-kicker"><i></i>GOOSE GAMES PRESENTS<i></i></span>
+            <span class="desktop-title-logo" aria-hidden="true">
+                <span class="desktop-title-mark">
+                    <span class="desktop-title-impact"></span>
+                    <img class="desktop-title-rack" src="./src/assets/Assets/triangle.png" alt="">
+                    <img class="desktop-title-eight" src="./src/assets/Assets/svgs/ball_8.svg" alt="">
+                </span>
+                <span class="desktop-title-wordmark">
+                    <strong><b>RACK</b></strong>
+                    <strong class="desktop-title-ruin"><i>&amp;</i><b>RUIN</b></strong>
+                </span>
+            </span>
+            <span class="desktop-title-tagline" aria-hidden="true">BREAK THE RULES <i>◆</i> OWN THE TABLE</span>
+            <span class="desktop-title-prompt"><b>CLICK TO START</b></span>
+            <small>ENTER&nbsp;&nbsp;·&nbsp;&nbsp;SPACE&nbsp;&nbsp;·&nbsp;&nbsp;CONTROLLER A</small>
+        </button>
+    </section>
+    <div class="crt-overlay"></div>
+    <div id="ui-tooltip" class="ui-tooltip hidden"></div>
+    <button id="global-menu-btn" class="global-menu-btn" aria-label="Open menu"><span aria-hidden="true"></span></button>
+
+    <header class="header-panel">
+        <div class="stage-panel">
+            <div id="stage-label" class="label">SECTOR</div>
+            <div id="stage-info">1-1</div>
+        </div>
+        <div class="center timer-panel">
+            <div id="timer-label" class="label">TIME</div>
+            <div id="timer-count" class="timer">00.0</div>
+        </div>
+        <div class="center">
+            <div id="chalk-label" class="label">CHALK</div>
+            <div id="chalk-count" class="chalk">000</div>
+        </div>
+        <div class="center classic-detail-panel">
+            <div id="classic-detail-label" class="label">GROUPS</div>
+            <div id="classic-detail-info" class="classic-detail-info"></div>
+        </div>
+        <div class="center mods-panel">
+            <div id="mods-label" class="label">ACTIVE MODS</div>
+            <div id="active-mods" class="mods">NONE</div>
+        </div>
+        <div id="par-panel" class="center par-panel hidden">
+            <div id="par-label" class="label">SHOTS / PAR</div>
+            <div id="par-count" class="par-count">0 / 0</div>
+        </div>
+        <div class="right">
+            <div id="balls-label" class="label">TARGETS</div>
+            <div id="target-balls">0</div>
+        </div>
+        <button id="pause-menu-btn" class="hud-menu-btn" aria-label="Open pause menu"><span aria-hidden="true"></span></button>
+    </header>
+
+    <main id="game-container">
+        <canvas id="gameCanvas" width="800" height="450"></canvas>
+        <div id="desktop-power-meter" class="power-meter hidden" aria-hidden="true">
+            <span id="desktop-power-meter-label">0% POWER</span>
+            <b><i id="desktop-power-meter-fill"></i></b>
+            <em id="desktop-power-meter-max">MAX</em>
+        </div>
+        <section id="curse-alert" class="hidden curse-alert" tabindex="0" aria-live="polite">
+            <h2 id="curse-title">TABLE CONDITIONS</h2>
+            <p id="curse-text"></p>
+        </section>
+        <div id="celebration-text">TABLE CLEARED</div>
+        <button id="achievement-toast" class="achievement-toast hidden" type="button" aria-live="polite">
+            <span>ACHIEVEMENT UNLOCKED</span>
+            <strong id="achievement-toast-title">Trophy Pin</strong>
+            <small id="achievement-toast-points">+5 STYLE POINTS</small>
+        </button>
+        <div id="classic-table-status" class="classic-table-status hidden" aria-live="polite"></div>
+        <section id="pocketed-panel" class="pocketed-panel"></section>
+
+        <section id="debug-panel" class="hidden overlay-panel debug-panel">
+            <div class="debug-title">
+                <span>SYSTEM DEBUG CONSOLE</span>
+                <span>ROOT</span>
+            </div>
+            <button data-debug="pocketAll">NUKE TABLE</button>
+            <button data-debug="nextRound">SKIP TO SHOP</button>
+            <button data-debug="completeRun">COMPLETE RUN</button>
+            <button data-debug="roundCelebration">CYCLE ROUND CELEBRATION</button>
+            <button data-debug="resetStage">RESET TABLE</button>
+            <button data-debug="chalk">INJECT 500 CHALK</button>
+            <button data-debug="drainTime">DRAIN 10 SECONDS</button>
+            <button data-debug="unlockAll">UNLOCK EVERYTHING</button>
+            <button data-debug="cleanSave" class="danger">CLEAN SAVE</button>
+            <label class="debug-select-label" for="debug-boss-select">JUMP TO BOSS</label>
+            <select id="debug-boss-select" class="debug-select">
+                <option value="">SELECT BOSS...</option>
+            </select>
+            <label class="debug-select-label" for="debug-anomaly-select">ADD TABLE ANOMALY</label>
+            <select id="debug-anomaly-select" class="debug-select">
+                <option value="">SELECT ANOMALY...</option>
+            </select>
+            <label class="debug-select-label" for="debug-classic-winner-select">END CLASSIC MATCH</label>
+            <select id="debug-classic-winner-select" class="debug-select">
+                <option value="">SELECT WINNER...</option>
+                <option value="0">PLAYER 1</option>
+                <option value="1">PLAYER 2</option>
+            </select>
+            <button data-debug="colliders">TOGGLE COLLIDER PAINT</button>
+            <button data-debug="editColliders">EDIT COLLIDERS</button>
+            <button data-debug="saveColliders">SAVE COLLIDERS</button>
+            <button data-debug="resetColliders">RESET COLLIDERS</button>
+        </section>
+
+        <section id="start-menu" class="overlay-full start-menu">
+            <button id="home-settings-btn" class="home-settings-btn" data-open-player-settings type="button" aria-label="Open settings">
+                <span aria-hidden="true">⚙</span> SETTINGS
+            </button>
+            <button id="home-music-mute" class="home-music-mute" type="button" aria-label="Mute music" aria-pressed="false">
+                <span>MUSIC</span>
+                <strong aria-hidden="true"></strong>
+            </button>
+            <div class="home-atmosphere" aria-hidden="true">
+                <span class="home-chalk-burst chalk-a"></span>
+                <span class="home-chalk-burst chalk-b"></span>
+                <span class="home-chalk-burst chalk-c"></span>
+                <span class="drift-ball ball-a">1</span>
+                <span class="drift-ball striped ball-b">9</span>
+                <span class="drift-ball ball-c">6</span>
+                <span class="drift-ball ball-d">3</span>
+                <span class="drift-ball striped ball-e">11</span>
+                <span class="drift-ball striped ball-f">14</span>
+                <span class="home-shot shot-a"><i></i><b></b><em></em></span>
+                <span class="home-shot shot-b"><i></i><b></b><em></em></span>
+            </div>
+            <p class="home-version">v0.7</p>
+            <div id="home-table-menu" class="home-table-menu" aria-label="Main menu pool table">
+                <canvas id="home-menu-canvas" width="800" height="450" aria-label="Drag back from the cue ball and shoot it into a labeled pocket"></canvas>
+                <div class="home-pocket-labels">
+                    <button id="roguelike-menu-btn" class="home-pocket-target pocket-tl" data-home-pocket="tl" type="button"><strong>RUIN RUN</strong><span>ROGUELIKE</span></button>
+                    <button id="challenge-mode-btn" class="home-pocket-target pocket-tm" data-home-pocket="tm" type="button"><strong>CHALLENGE</strong><span>SOLO TRIALS</span></button>
+                    <button id="classic-pool-btn" class="home-pocket-target pocket-tr" data-home-pocket="tr" type="button"><strong>CLASSIC</strong><span>TURN-BASED</span></button>
+                    <button id="trophy-chest-btn" class="home-pocket-target pocket-bl" data-home-pocket="bl" type="button"><strong>ACHIEVEMENTS</strong><span>TROPHY ROOM</span></button>
+                    <button id="customize-table-btn" class="home-pocket-target pocket-bm" data-home-pocket="bm" type="button"><strong>CUSTOMIZE</strong><span>TABLE SHOP</span></button>
+                    <button id="party-mode-btn" class="home-pocket-target pocket-br" data-home-pocket="br" type="button"><strong>PARTY</strong><span>REAL-TIME</span></button>
+                </div>
+                <div class="home-first-run-coach" role="note" aria-hidden="true">
+                    <span class="home-coach-arrow" aria-hidden="true">↙</span>
+                    <strong>START HERE</strong>
+                    <small>Begin with the Ruin Run</small>
+                </div>
+                <div class="home-table-instructions" role="note" aria-label="Choose a mode by clicking its label, or drag the cue ball to shoot a pocket yourself">
+                    <span class="home-menu-choice home-menu-choice-click"><i>1</i><b>CLICK A MODE</b><small>the cue ball shoots itself</small></span>
+                    <em>OR</em>
+                    <span class="home-menu-choice home-menu-choice-shoot"><i>2</i><b>SHOOT IT YOURSELF</b><small>drag from the cue ball · aim · release</small></span>
+                </div>
+            </div>
+            <section class="mobile-home-menu" aria-label="Main menu">
+                <header class="mobile-home-brand">
+                    <span>WELCOME TO THE TABLE</span>
+                    <h1><b>RACK</b><i>&amp;</i><b>RUIN</b></h1>
+                    <p>Pick a way to play.</p>
+                </header>
+                <div class="mobile-home-modes" aria-label="Game modes">
+                    <button class="mobile-mode-card primary" type="button" data-mobile-home-target="roguelike-menu-btn">
+                        <span class="mobile-mode-number">01</span>
+                        <strong>RUIN RUN</strong>
+                        <small>THE POOL ROGUELIKE</small>
+                        <i aria-hidden="true">PLAY →</i>
+                    </button>
+                    <button class="mobile-mode-card" type="button" data-mobile-home-target="classic-pool-btn">
+                        <span class="mobile-mode-number">02</span>
+                        <strong>CLASSIC POOL</strong>
+                        <small>8-BALL &amp; 9-BALL</small>
+                        <i aria-hidden="true">PLAY →</i>
+                    </button>
+                    <button class="mobile-mode-card" type="button" data-mobile-home-target="challenge-mode-btn">
+                        <span class="mobile-mode-number">03</span>
+                        <strong>CHALLENGE MODE</strong>
+                        <small>SOLO TABLE TRIALS</small>
+                        <i aria-hidden="true">PLAY →</i>
+                    </button>
+                </div>
+                <nav class="mobile-home-utilities" aria-label="Collection and appearance">
+                    <button type="button" data-mobile-home-target="trophy-chest-btn">ACHIEVEMENTS</button>
+                    <button type="button" data-mobile-home-target="customize-table-btn">CUSTOMIZE</button>
+                    <button id="mobile-home-settings-btn" data-open-player-settings type="button">SETTINGS</button>
+                </nav>
+            </section>
+            <footer class="credits">Made by <a href="https://jakedoesdev.com"><span>jakedoesdev.com</span></a> | Sound effects courtesy of <span>zapsplat.com</span></footer>
+        </section>
+
+        <section id="roguelike-ui" class="hidden overlay-full roguelike-ui">
+            <header class="roguelike-header">
+                <div>
+                    <h2>RUIN RUN</h2>
+                </div>
+                <button id="roguelike-back-btn" class="menu-btn primary" type="button">BACK</button>
+            </header>
+            <div class="roguelike-menu-grid">
+                <section class="roguelike-run-panel">
+                    <div id="profile-brag-board" class="profile-brag-board" aria-label="Player run records"></div>
+                    <div class="run-setup">
+                        <label class="seed-row">SEED <input id="seed-input" maxlength="24" placeholder="RANDOM"></label>
+                        <label class="ruin-row">
+                            <span>RUIN DIFFICULTY</span>
+                            <input id="ruin-level" type="range" min="0" max="0" value="0">
+                            <span id="ruin-label">FRESH FELT // TIER 0</span>
+                            <em id="ruin-status">Fresh Felt is available now. Complete a run to unlock Pocket Dust and higher tiers.</em>
+                        </label>
+                    </div>
+                    <div class="roguelike-actions">
+                        <button id="start-run-btn" class="menu-btn primary" type="button">START RUN</button>
+                        <button id="daily-run-btn" class="menu-btn mode-secondary" type="button">DAILY RUN</button>
+                    </div>
+                    <div id="daily-table" class="daily-table" aria-label="Daily challenge table"></div>
+                    <div class="continue-slots" id="continue-slots" aria-label="Continue saved roguelike runs"></div>
+                </section>
+                <nav class="roguelike-side-actions" aria-label="Ruin run extras">
+                    <button id="how-to-play-btn" class="menu-btn quiet" type="button">HOW TO PLAY</button>
+                    <button id="relic-shelf-btn" class="menu-btn quiet" type="button">RELIC SHELF</button>
+                    <button id="customize-table-roguelike-btn" class="menu-btn quiet" type="button">CUSTOMIZE TABLE</button>
+                    <button id="roguelike-achievements-btn" class="menu-btn quiet" type="button">ACHIEVEMENTS</button>
+                    <button id="legend-btn" class="menu-btn quiet" type="button">LEGEND</button>
+                </nav>
+            </div>
+        </section>
+
+        <section id="party-ui" class="hidden overlay-full party-ui" aria-labelledby="party-title">
+            <header class="party-header">
+                <div>
+                    <span class="party-kicker">NO TURNS // ALL CHAOS</span>
+                    <h2 id="party-title">PARTY MODE</h2>
+                    <p>Every player gets a cue ball. Aim together, shoot together, ruin friendships together.</p>
+                </div>
+                <button id="party-back-btn" class="menu-btn primary" type="button">BACK</button>
+            </header>
+
+            <div id="party-setup" class="party-setup">
+                <nav class="party-play-tabs" aria-label="Party play type">
+                    <button class="selected" type="button" data-party-play="ai">AI CREW <small>solo + bots</small></button>
+                    <button type="button" data-party-play="local">LOCAL CHAOS <small>touch, keys, pads</small></button>
+                    <button type="button" data-party-play="online">STEAM ROOM <small>live Steam lobby + P2P</small></button>
+                </nav>
+
+                <section class="party-config-panel">
+                    <div class="party-config-group">
+                        <span class="party-config-label">GAME</span>
+                        <div class="party-choice-grid party-rules-grid">
+                            <button class="selected" type="button" data-party-rule="color_rush">
+                                <strong>COLOR RUSH</strong>
+                                <span>Clear your color. Most balls wins.</span>
+                            </button>
+                            <button type="button" data-party-rule="team_clear">
+                                <strong>CLEAR TOGETHER</strong>
+                                <span>One shared rack. Every sink scores.</span>
+                            </button>
+                            <button type="button" data-party-rule="crown">
+                                <strong>CROWN BALL</strong>
+                                <span>Clear the rack, then fight for gold.</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="party-config-group">
+                        <span class="party-config-label">TABLE</span>
+                        <div id="party-table-summary" class="party-table-summary">
+                            <i class="party-table-icon standard"></i><div><strong>THE SIX</strong><span>Classic six-pocket sprint.</span></div>
+                            <button id="party-browse-tables-btn" type="button">BROWSE TABLES</button>
+                        </div>
+                        <span class="party-table-catalog-note">18 Party presets: house, trailer, cursed, and boss tables.</span>
+                    </div>
+
+                    <div class="party-quick-settings">
+                        <label>PLAYERS
+                            <select id="party-player-count">
+                                <option value="2">2 PLAYERS</option>
+                                <option value="3">3 PLAYERS</option>
+                                <option value="4" selected>4 PLAYERS</option>
+                            </select>
+                        </label>
+                        <button id="party-pickups-toggle" class="party-switch selected" type="button" aria-pressed="true"><span>PICKUPS</span><strong>ON</strong></button>
+                        <label>ROUND
+                            <select id="party-round-time">
+                                <option value="0">NO TIMER</option>
+                                <option value="60">60 SEC</option>
+                                <option value="90" selected>90 SEC</option>
+                                <option value="120">120 SEC</option>
+                            </select>
+                        </label>
+                    </div>
+                    <p class="party-pickup-help"><strong>HOT CUE</strong> stacks next-shot power · <strong>WIDE POCKETS</strong> stacks pocket forgiveness for 14s · <strong>TABLE BURST</strong> fires instantly on collection.</p>
+                </section>
+
+                <aside class="party-side-panel">
+                    <section class="party-side-mode selected" data-party-panel="ai">
+                        <span class="party-config-label">BOT PRESSURE</span>
+                        <div class="party-segmented">
+                            <button type="button" data-party-ai="chill">CHILL</button>
+                            <button class="selected" type="button" data-party-ai="rowdy">ROWDY</button>
+                            <button type="button" data-party-ai="feral">FERAL</button>
+                        </div>
+                        <div class="party-control-card"><strong>YOU</strong><span>Drag from your cue ball, or use a gamepad.</span></div>
+                        <div class="party-control-card"><strong>THE CREW</strong><span>Bots take shots in real time and never wait for the table.</span></div>
+                        <div class="party-control-card"><strong>TABLE PICKUPS</strong><span>Temporary, stackable real-time cousins of Classic upgrades. They replace the shop during a match.</span></div>
+                    </section>
+
+                    <section class="party-side-mode" data-party-panel="local">
+                        <span class="party-config-label">LOCAL CONTROLS</span>
+                        <div class="party-control-card"><strong>P1</strong><span>A / D aim · W charge · Space shoot</span></div>
+                        <div class="party-control-card"><strong>P2</strong><span>← / → aim · ↑ charge · Enter shoot</span></div>
+                        <div class="party-control-card"><strong>EVERYONE</strong><span>Gamepads or simultaneous touch can control any cue ball.</span></div>
+                    </section>
+
+                    <section class="party-side-mode" data-party-panel="online">
+                        <span class="party-config-label">LIVE ROOM</span>
+                        <label class="party-online-field">NAME<input id="party-online-name" maxlength="18" placeholder="PLAYER"></label>
+                        <label class="party-online-field">ROOM CODE<input id="party-room-code" maxlength="6" placeholder="ABC123"></label>
+                        <div class="party-online-actions">
+                            <button id="party-host-btn" type="button">HOST</button>
+                            <button id="party-join-btn" type="button">JOIN</button>
+                        </div>
+                        <p id="party-online-status" class="party-online-status">Host a Steam lobby or enter its six-character room code.</p>
+                        <div id="party-roster" class="party-roster"></div>
+                    </section>
+                </aside>
+
+                <button id="party-start-btn" class="menu-btn primary party-start-btn" type="button">START THE CHAOS</button>
+            </div>
+
+            <section id="party-table-picker" class="party-table-picker hidden" aria-label="Party table browser">
+                <header><div><span class="party-kicker">TABLE LIBRARY</span><h2>CHOOSE THE CHAOS</h2><p>House classics, trailer tables, cursed felt, and boss-pocket rules.</p></div><button id="party-table-picker-close" class="menu-btn primary" type="button">DONE</button></header>
+                <div id="party-table-picker-groups" class="party-table-picker-groups" aria-label="Table categories"></div>
+                <div id="party-table-picker-grid" class="party-table-picker-grid" aria-live="polite"></div>
+            </section>
+
+            <div id="party-arena" class="party-arena hidden">
+                <div class="party-arena-topbar">
+                    <div class="party-arena-identity"><small>PARTY MATCH</small><span id="party-arena-mode">COLOR RUSH</span></div>
+                    <div class="party-arena-timer"><small>ROUND</small><strong id="party-arena-clock">01:30</strong></div>
+                    <p id="party-arena-status">Clear your color before the horn.</p>
+                    <button id="party-exit-btn" class="hud-menu-btn party-arena-menu" type="button" aria-label="Open Party menu"><span aria-hidden="true"></span></button>
+                </div>
+                <div class="party-canvas-wrap">
+                    <canvas id="party-canvas" width="800" height="450" aria-label="Real-time party pool table"></canvas>
+                    <div id="party-countdown" class="party-countdown hidden" aria-live="polite"></div>
+                </div>
+                <div id="party-scoreboard" class="party-scoreboard" aria-live="polite"></div>
+                <div class="party-controls-hint"><span>DRAG · AIM · RELEASE&nbsp;&nbsp;//&nbsp;&nbsp;ESC OR MENU TO PAUSE&nbsp;&nbsp;//&nbsp;&nbsp;GAMEPADS SUPPORTED</span></div>
+                <div id="party-menu" class="party-menu hidden" aria-live="polite"><div class="mode-pause-card"><span class="mode-pause-kicker">PARTY // PAUSED</span><strong id="party-menu-title">TAKE FIVE?</strong><p>THE TABLE WAITS.</p><nav class="mode-pause-actions"><button id="party-menu-resume" class="menu-btn primary" type="button">RESUME</button><button id="party-menu-settings" class="menu-btn" type="button">SETTINGS</button><button id="party-menu-setup" class="menu-btn" type="button">MATCH SETUP</button><button id="party-menu-exit" class="menu-btn danger" type="button">EXIT PARTY MODE</button></nav><small>ESC TO RESUME</small></div></div>
+            </div>
+        </section>
+
+        <section id="challenge-ui" class="hidden overlay-full challenge-ui" aria-labelledby="challenge-title">
+            <header class="challenge-header">
+                <div><span>SOLO POCKET TRIALS</span><h2 id="challenge-title">CHALLENGE MODE</h2><p>Clear the table. Beat the clock.</p></div>
+                <div class="challenge-header-actions"><button id="challenge-creator-btn" class="menu-btn mode-secondary desktop-creator-only" type="button">CREATE</button><button id="challenge-workshop-btn" class="menu-btn mode-secondary desktop-workshop-only" type="button">MODS</button><button id="challenge-back-btn" class="menu-btn primary" type="button">BACK</button></div>
+            </header>
+            <div id="challenge-library-view" class="challenge-library-view">
+                <div id="challenge-library" class="challenge-library" aria-label="Challenge library"></div>
+                <aside class="challenge-detail-panel">
+                    <div id="challenge-detail"></div>
+                    <section id="challenge-leaderboard" class="challenge-leaderboard" aria-live="polite">
+                        <header><span>LEADERBOARD</span><button id="challenge-leaderboard-refresh" type="button">REFRESH</button></header>
+                        <div id="challenge-leaderboard-list">SELECT A TRIAL TO LOAD RECORDS.</div>
+                    </section>
+                    <button id="challenge-play-btn" class="menu-btn primary" type="button">START TRIAL</button>
+                </aside>
+                <p id="challenge-empty" class="hidden">NO CHALLENGES INSTALLED.</p>
+            </div>
+            <div id="challenge-arena" class="challenge-arena hidden">
+                <header class="challenge-arena-bar">
+                    <div class="challenge-arena-identity"><small>SOLO TRIAL</small><strong id="challenge-arena-title">POCKET TRIAL</strong></div>
+                    <dl><div><dt>TIME</dt><dd id="challenge-clock">00:00.00</dd></div><div><dt>SHOTS / PAR</dt><dd id="challenge-shots">0 / 4</dd></div><div><dt>TARGETS</dt><dd id="challenge-targets">0</dd></div><div><dt>PENALTY</dt><dd id="challenge-penalty">+00:00.00</dd></div></dl>
+                    <div class="challenge-arena-actions"><button id="challenge-restart-btn" type="button">RESTART</button><button id="challenge-exit-btn" type="button">LIBRARY</button></div>
+                </header>
+                <div class="challenge-canvas-wrap"><canvas id="challenge-canvas" width="800" height="450"></canvas><div id="challenge-result" class="challenge-result hidden"><strong id="challenge-result-title">CHALLENGE CLEARED</strong><div id="challenge-result-summary"></div><nav><button id="challenge-result-retry" type="button">RETRY</button><button id="challenge-result-next" class="hidden" type="button">NEXT TABLE</button><button id="challenge-result-library" type="button">LIBRARY</button></nav></div></div>
+                <footer><strong id="challenge-objective">POCKET EVERY TARGET</strong><span id="challenge-status">DRAG BACK FROM THE CUE BALL TO SHOOT</span></footer>
+                <div id="challenge-menu" class="challenge-menu hidden"><div class="mode-pause-card"><span class="mode-pause-kicker">SOLO TRIAL // PAUSED</span><strong>HOLD THE LINE</strong><p>YOUR TIME STAYS FROZEN.</p><nav class="mode-pause-actions"><button id="challenge-menu-resume" class="menu-btn primary" type="button">RESUME</button><button id="challenge-menu-settings" class="menu-btn" type="button">SETTINGS</button><button id="challenge-menu-restart" class="menu-btn" type="button">RESTART TRIAL</button><button id="challenge-menu-exit" class="menu-btn danger" type="button">EXIT TO LIBRARY</button></nav><small>ESC TO RESUME</small></div></div>
+            </div>
+        </section>
+
+        <section id="creator-ui" class="hidden overlay-full creator-ui desktop-creator-only" aria-labelledby="creator-title">
+            <header class="creator-header">
+                <div><span>STEAM DESKTOP UTILITY</span><h2 id="creator-title">CHALLENGE CREATOR</h2></div>
+                <div><button id="creator-undo-btn" type="button" title="Undo (Ctrl/Cmd+Z)">UNDO</button><button id="creator-redo-btn" type="button" title="Redo (Ctrl/Cmd+Shift+Z)">REDO</button><button id="creator-new-btn" type="button">NEW</button><button id="creator-import-btn" type="button">IMPORT</button><button id="creator-export-btn" type="button">EXPORT</button><button id="creator-save-btn" type="button">SAVE DRAFT</button><button id="creator-back-btn" class="menu-btn primary" type="button">BACK</button></div>
+                <input id="creator-import-file" class="hidden" type="file" accept=".json,.rackchallenge.json,application/json">
+            </header>
+            <div class="creator-workspace">
+                <aside class="creator-left-panel">
+                    <label>TITLE<input id="creator-title-input" maxlength="80"></label>
+                    <label>DESCRIPTION<textarea id="creator-description-input" maxlength="320"></textarea></label>
+                    <label>AUTHOR<input id="creator-author-input" maxlength="64"></label>
+                    <label class="creator-check"><input id="creator-mode-party" type="checkbox"><span>PARTY-COMPATIBLE TABLE</span></label>
+                    <nav id="creator-toolbox" class="creator-toolbox" aria-label="Challenge tools">
+                        <button class="selected" data-creator-tool="select" type="button">SELECT</button>
+                        <button data-creator-tool="cue" type="button">CUE SPAWN</button>
+                        <button data-creator-tool="ball" type="button">TARGET BALL</button>
+                        <button data-creator-tool="pocket" type="button">POCKET</button>
+                        <button data-creator-tool="bumper" type="button">BUMPER</button>
+                        <button data-creator-tool="wall" type="button">WALL</button>
+                        <button data-creator-tool="gate" type="button">GATE</button>
+                        <button data-creator-tool="spinner" type="button">SPINNER</button>
+                        <button data-creator-tool="portal" type="button">PORTAL PAIR</button>
+                        <button data-creator-tool="sticky" type="button">STICKY FELT</button>
+                        <button data-creator-tool="slick" type="button">SLICK FELT</button>
+                        <button data-creator-tool="gravity" type="button">GRAVITY WELL</button>
+                        <button data-creator-tool="repel" type="button">REPULSOR</button>
+                        <button data-creator-tool="orbit" type="button">ORBIT FIELD</button>
+                        <button data-creator-tool="slope" type="button">SLOPE</button>
+                        <button data-creator-tool="round-level" type="button">ROUND LEVEL</button>
+                    </nav>
+                    <div class="creator-art-tools"><button id="creator-snap-btn" class="selected" type="button" aria-pressed="true">SNAP 10</button><button id="creator-view-reset-btn" type="button">RESET VIEW</button><button id="creator-table-art-btn" type="button">TABLE SVG</button><button id="creator-background-art-btn" type="button">BACKGROUND SVG</button></div>
+                    <input id="creator-table-art-file" class="hidden" type="file" accept="image/svg+xml,.svg">
+                    <input id="creator-background-art-file" class="hidden" type="file" accept="image/svg+xml,.svg">
+                </aside>
+                <main class="creator-stage"><div class="creator-stage-top"><div id="creator-summary" class="creator-summary"></div><div class="creator-zoom-controls"><button id="creator-zoom-out-btn" type="button">−</button><span id="creator-zoom-label">100%</span><button id="creator-zoom-in-btn" type="button">+</button></div></div><canvas id="creator-canvas" width="800" height="450"></canvas><p id="creator-status">SELECT A TOOL AND BUILD SOMETHING UNREASONABLE.</p></main>
+                <aside class="creator-right-panel">
+                    <h3>INSPECTOR</h3><div id="creator-inspector" class="creator-inspector"></div>
+                    <h3>VALIDATION</h3><div id="creator-validation" class="creator-validation">PLAYTEST BEFORE PUBLISHING.</div>
+                    <div class="creator-actions"><button id="creator-validate-btn" type="button">VALIDATE</button><button id="creator-playtest-btn" type="button">PLAYTEST</button><button id="creator-publish-btn" class="desktop-workshop-only" type="button">PUBLISH TO WORKSHOP</button></div>
+                </aside>
+            </div>
+        </section>
+
+        <section id="workshop-ui" class="hidden overlay-full workshop-ui desktop-workshop-only" aria-labelledby="workshop-title">
+            <header class="workshop-header">
+                <div><span id="workshop-mode-label">STEAM WORKSHOP</span><h2 id="workshop-title">MOD WORKSHOP</h2><p>Install, organize, and publish table packs.</p></div>
+                <div><button id="workshop-refresh-btn" class="menu-btn mode-secondary" type="button">REFRESH</button><button id="workshop-browse-btn" class="menu-btn mode-secondary" type="button">OPEN WORKSHOP</button><button id="workshop-back-btn" class="menu-btn primary" type="button">BACK</button></div>
+            </header>
+            <div class="workshop-workspace">
+                <aside class="workshop-catalog-panel">
+                    <section class="workshop-get-panel">
+                        <h3>GET A MOD</h3>
+                        <p>Paste a Steam Workshop item ID, or choose a pack below.</p>
+                        <div><input id="workshop-item-id" inputmode="numeric" placeholder="WORKSHOP ITEM ID"><button id="workshop-install-btn" type="button">INSTALL</button></div>
+                    </section>
+                    <section><header><h3>INSTALLED</h3><span id="workshop-installed-count">0</span></header><div id="workshop-installed-list" class="workshop-item-list" aria-label="Installed Workshop mods"></div></section>
+                    <section><header><h3>DISCOVER</h3><div class="workshop-page-controls"><button id="workshop-catalog-prev-btn" type="button" aria-label="Previous Workshop page">←</button><span id="workshop-catalog-count">0</span><button id="workshop-catalog-next-btn" type="button" aria-label="Next Workshop page">→</button></div></header><div id="workshop-catalog-list" class="workshop-item-list" aria-label="Workshop mod catalog"></div></section>
+                </aside>
+                <main class="workshop-detail-panel">
+                    <div id="workshop-detail" class="workshop-detail">SELECT A MOD TO INSPECT ITS TABLES.</div>
+                    <div class="workshop-detail-actions"><button id="workshop-install-selected-btn" class="hidden" type="button">INSTALL</button><button id="workshop-toggle-btn" type="button">ENABLE</button><button id="workshop-unsubscribe-btn" class="danger" type="button">UNSUBSCRIBE</button><button id="workshop-open-item-btn" type="button">VIEW ON STEAM</button></div>
+                    <p id="workshop-status" role="status">CONNECTING TO WORKSHOP…</p>
+                </main>
+                <aside class="workshop-publish-panel">
+                    <div class="workshop-publish-heading"><h3>PUBLISH A TABLE MOD</h3><button id="workshop-publish-new-btn" type="button">NEW MOD</button></div>
+                    <p>Choose one table for a mod, or several to publish an ordered playlist.</p>
+                    <p id="workshop-publish-state" class="workshop-publish-state">NEW MOD PACK</p>
+                    <label>TITLE<input id="workshop-publish-title" maxlength="80" placeholder="MIDNIGHT SHIFT"></label>
+                    <label>DESCRIPTION<textarea id="workshop-publish-description" maxlength="320" placeholder="What makes this table pack special?"></textarea></label>
+                    <label>AUTHOR<input id="workshop-publish-author" maxlength="64" placeholder="YOUR NAME"></label>
+                    <label>PLAYLIST TITLE <small>OPTIONAL FOR MULTI-TABLE MODS</small><input id="workshop-playlist-title" maxlength="80" placeholder="MIDNIGHT ROUTE"></label>
+                    <div id="workshop-publish-tables" class="workshop-publish-tables">SAVE A LOCAL DRAFT TO ADD IT HERE.</div>
+                    <button id="workshop-publish-btn" class="menu-btn primary" type="button">PUBLISH MOD</button>
+                </aside>
+            </div>
+        </section>
+
+        <section id="classic-ui" class="hidden overlay-full classic-ui">
+            <div class="classic-header">
+                <div>
+                    <h2>CLASSIC POOL</h2>
+                </div>
+                <button id="classic-back-btn" class="menu-btn primary">BACK</button>
+            </div>
+            <div class="classic-stage">
+                <div class="classic-setup-column">
+                    <div class="classic-mode-grid">
+                        <button class="classic-card selected" type="button" data-classic-ruleset="eight_ball">
+                            <strong>8</strong>
+                            <h3>8-Ball Duel</h3>
+                            <p>Solids and stripes. Sink your group, then call the 8 last.</p>
+                            <span>Classic ruleset</span>
+                        </button>
+                        <button class="classic-card" type="button" data-classic-ruleset="nine_ball">
+                            <strong>9</strong>
+                            <h3>9-Ball Duel</h3>
+                            <p>Hit the lowest ball first. The 9 wins the rack.</p>
+                            <span>Fast rotation rules</span>
+                        </button>
+                        <button id="classic-shop-toggle" class="classic-card selected" type="button">
+                            <strong>+</strong>
+                            <h3>Shop Rules</h3>
+                            <p>Shared upgrades after pocketed balls or three misses.</p>
+                            <span id="classic-shop-state">SHOP ON</span>
+                        </button>
+                    </div>
+                    <div class="classic-match-options">
+                        <button class="selected" type="button" data-classic-opponent="ai">AI DUEL</button>
+                        <button type="button" data-classic-opponent="local">LOCAL FRIEND</button>
+                        <button type="button" data-classic-opponent="async">ONLINE FRIENDS</button>
+                    </div>
+                </div>
+                <div id="classic-async-panel" class="classic-async-panel classic-side-mode-ai">
+                    <div class="classic-mobile-way-buttons" aria-label="Way to play">
+                        <button class="selected" type="button" data-classic-opponent="ai">AI DUEL</button>
+                        <button type="button" data-classic-opponent="local">LOCAL FRIEND</button>
+                        <button type="button" data-classic-opponent="async">ONLINE FRIENDS</button>
+                    </div>
+                    <section class="classic-mode-panel classic-ai-panel">
+                        <h3>AI Opponent</h3>
+                        <div class="classic-mobile-match-config" aria-label="AI match settings">
+                            <button class="selected" type="button" data-classic-mobile-ruleset="eight_ball">8-BALL</button>
+                            <button type="button" data-classic-mobile-ruleset="nine_ball">9-BALL</button>
+                            <button type="button" data-classic-shop-toggle><span data-classic-shop-state>SHOP ON</span></button>
+                        </div>
+                        <div class="classic-side-control">
+                            <span>Difficulty</span>
+                            <div class="classic-segmented" aria-label="AI difficulty">
+                                <button class="selected" type="button" data-classic-ai-difficulty="casual">CHILL</button>
+                                <button type="button" data-classic-ai-difficulty="sharp">ROWDY</button>
+                                <button type="button" data-classic-ai-difficulty="mean">FERAL</button>
+                            </div>
+                        </div>
+                        <div class="classic-side-control">
+                            <span>History</span>
+                            <div class="classic-side-empty">Local AI match history will appear here.</div>
+                        </div>
+                        <div class="classic-side-control">
+                            <div class="classic-starter-top">
+                                <span>Starting Upgrades</span>
+                                <div class="classic-starter-summary" data-classic-starter-summary="ai">0/3 starters // 0/2 bans</div>
+                                <button class="classic-elements-switch selected" type="button" data-classic-elements-toggle><span data-classic-elements-state>ELEM ON</span></button>
+                            </div>
+                            <div class="classic-upgrade-tools" data-classic-tool-context="ai" role="group" aria-label="AI upgrade selection tool">
+                                <button class="selected" type="button" data-classic-tool-mode="starter" data-classic-tool-target="ai">START</button>
+                                <button type="button" data-classic-tool-mode="ban" data-classic-tool-target="ai">BAN</button>
+                            </div>
+                            <div id="classic-ai-starter-list" class="classic-starter-list"></div>
+                        </div>
+                    </section>
+                    <section class="classic-mode-panel classic-local-panel">
+                        <h3>Local Match</h3>
+                        <div class="classic-mobile-match-config" aria-label="Local match settings">
+                            <button class="selected" type="button" data-classic-mobile-ruleset="eight_ball">8-BALL</button>
+                            <button type="button" data-classic-mobile-ruleset="nine_ball">9-BALL</button>
+                            <button type="button" data-classic-shop-toggle><span data-classic-shop-state>SHOP ON</span></button>
+                        </div>
+                        <div class="classic-side-control classic-local-players-control">
+                            <div class="classic-local-names">
+                                <label>Player 1 Name <input id="classic-local-p1-input" type="text" maxlength="16" placeholder="Player 1 Name"></label>
+                                <label>Player 2 Name <input id="classic-local-p2-input" type="text" maxlength="16" placeholder="Player 2 Name"></label>
+                            </div>
+                            <span class="classic-break-label">Who Breaks?</span>
+                            <div class="classic-segmented classic-break-picker" aria-label="First local shooter">
+                                <button class="selected" type="button" data-classic-local-first="0">P1</button>
+                                <button type="button" data-classic-local-first="1">P2</button>
+                            </div>
+                        </div>
+                        <div class="classic-side-control">
+                            <div class="classic-starter-top">
+                                <span>Starting Upgrades</span>
+                                <div class="classic-starter-summary" data-classic-starter-summary="local">0/3 starters // 0/2 bans</div>
+                                <button class="classic-elements-switch selected" type="button" data-classic-elements-toggle><span data-classic-elements-state>ELEM ON</span></button>
+                            </div>
+                            <div class="classic-upgrade-tools" data-classic-tool-context="local" role="group" aria-label="Local upgrade selection tool">
+                                <button class="selected" type="button" data-classic-tool-mode="starter" data-classic-tool-target="local">START</button>
+                                <button type="button" data-classic-tool-mode="ban" data-classic-tool-target="local">BAN</button>
+                            </div>
+                            <div id="classic-local-starter-list" class="classic-starter-list"></div>
+                        </div>
+                    </section>
+                    <div class="classic-mobile-tabs" role="tablist" aria-label="Classic online panels">
+                        <button type="button" data-classic-mobile-tab="games">ACTIVE</button>
+                        <button type="button" data-classic-mobile-tab="invite">HOST</button>
+                        <button class="selected" type="button" data-classic-mobile-tab="profile">JOIN</button>
+                    </div>
+                    <div class="classic-mobile-section selected" data-classic-mobile-panel="profile">
+                        <div class="classic-async-identity">
+                            <div>
+                                <span>YOUR FRIEND CODE</span>
+                                <strong id="classic-friend-code">NAME FIRST</strong>
+                            </div>
+                            <button id="classic-copy-code-btn" type="button">COPY CODE</button>
+                        </div>
+                        <div class="classic-async-row classic-profile-row">
+                            <label>NAME <input id="classic-username-input" type="text" maxlength="24" placeholder="your name"></label>
+                            <button id="classic-connect-btn" type="button">GET CODE</button>
+                            <button id="classic-refresh-btn" type="button">REFRESH</button>
+                        </div>
+                        <div class="classic-join-lists">
+                            <section class="classic-open-section">
+                                <h3>OPEN MATCHES</h3>
+                                <div id="classic-open-list" class="classic-async-list"></div>
+                            </section>
+                            <section class="classic-invites-section">
+                                <h3>INVITES</h3>
+                                <div id="classic-invite-list" class="classic-async-list"></div>
+                            </section>
+                            <section class="classic-friends-section">
+                                <h3>FRIENDS</h3>
+                                <div id="classic-friends-list" class="classic-async-list"></div>
+                            </section>
+                        </div>
+                    </div>
+                    <div class="classic-mobile-section" data-classic-mobile-panel="invite">
+                        <div class="classic-mobile-match-config" aria-label="Mobile match settings">
+                            <button class="selected" type="button" data-classic-mobile-ruleset="eight_ball">8-BALL</button>
+                            <button type="button" data-classic-mobile-ruleset="nine_ball">9-BALL</button>
+                            <button id="classic-mobile-shop-toggle" class="selected" type="button"><span id="classic-mobile-shop-state">SHOP ON</span></button>
+                        </div>
+                        <div class="classic-async-setup classic-host-ban-setup">
+                            <div class="classic-starter-top">
+                                <h3>Pick starting upgrades or bans</h3>
+                                <p class="classic-starter-summary" data-classic-starter-summary="host">0/3 starters // 0/2 bans</p>
+                                <button class="classic-elements-switch selected" type="button" data-classic-elements-toggle><span data-classic-elements-state>ELEM ON</span></button>
+                            </div>
+                            <p id="classic-match-rules-summary" class="classic-match-rules-summary">8-Ball // Shop On</p>
+                            <label class="classic-ban-search">SEARCH <input id="classic-host-ban-search" type="search" placeholder="upgrade name"></label>
+                            <div class="classic-upgrade-tools" data-classic-tool-context="host" role="group" aria-label="Online host upgrade selection tool">
+                                <button type="button" data-classic-tool-mode="starter" data-classic-tool-target="host">START</button>
+                                <button class="selected" type="button" data-classic-tool-mode="ban" data-classic-tool-target="host">BAN</button>
+                            </div>
+                            <div id="classic-host-ban-list" class="classic-ban-list"></div>
+                        </div>
+                        <div class="classic-async-row">
+                            <label>INVITE <input id="classic-invite-input" type="text" maxlength="24" placeholder="friend code"></label>
+                            <button id="classic-invite-btn" type="button">SEND INVITE</button>
+                            <button id="classic-open-match-btn" type="button">HOST OPEN MATCH</button>
+                        </div>
+                        <p id="classic-async-status" class="classic-async-status">Enter a nickname to get your friend code, then invite a friend or accept a pending match.</p>
+                    </div>
+                    <div class="classic-mobile-section" data-classic-mobile-panel="games">
+                        <div class="classic-games-tabs" role="tablist" aria-label="Classic game lists">
+                            <button type="button" data-classic-games-tab="turns">TURNS</button>
+                            <button class="selected" type="button" data-classic-games-tab="invites">INVITES</button>
+                            <button type="button" data-classic-games-tab="friends">FRIENDS</button>
+                            <button type="button" data-classic-games-tab="history">HISTORY</button>
+                        </div>
+                        <div class="classic-async-lists games-tab-turns">
+                            <section class="classic-your-turn-section">
+                                <h3>YOUR TURN</h3>
+                                <div id="classic-my-turn-list" class="classic-async-list"></div>
+                            </section>
+                            <section class="classic-waiting-section">
+                                <h3>WAITING</h3>
+                                <div id="classic-waiting-list" class="classic-async-list"></div>
+                            </section>
+                            <section class="classic-history-section">
+                                <div class="classic-history-header">
+                                    <button class="classic-history-back" type="button" data-classic-history-back>BACK</button>
+                                    <h3>HISTORY</h3>
+                                </div>
+                                <div id="classic-history-list" class="classic-async-list"></div>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+                <button id="classic-start-btn" class="menu-btn primary classic-start-btn">BREAK</button>
+                <div id="classic-accept-popup" class="classic-accept-popup hidden" role="dialog" aria-modal="true" aria-labelledby="classic-accept-title">
+                    <div class="classic-accept-card">
+                        <div>
+                            <h3 id="classic-accept-title">ACCEPT MATCH?</h3>
+                            <p id="classic-accept-summary">Choose up to 2 extra bans before accepting.</p>
+                        </div>
+                        <div class="classic-starter-top classic-guest-starter-top">
+                            <span>Starting Upgrades</span>
+                            <p class="classic-starter-summary" data-classic-starter-summary="guest">0/3 starters // 0/2 bans</p>
+                            <button class="classic-elements-switch selected" type="button" data-classic-elements-toggle><span data-classic-elements-state>ELEM ON</span></button>
+                        </div>
+                        <label class="classic-ban-search">SEARCH <input id="classic-guest-ban-search" type="search" placeholder="upgrade name"></label>
+                        <div class="classic-upgrade-tools" data-classic-tool-context="guest" role="group" aria-label="Online guest upgrade selection tool">
+                            <button type="button" data-classic-tool-mode="starter" data-classic-tool-target="guest">START</button>
+                            <button class="selected" type="button" data-classic-tool-mode="ban" data-classic-tool-target="guest">BAN</button>
+                        </div>
+                        <div id="classic-guest-ban-list" class="classic-ban-list"></div>
+                        <div class="classic-accept-actions">
+                            <button id="classic-accept-confirm-btn" class="menu-btn primary" type="button">ACCEPT</button>
+                            <button id="classic-accept-cancel-btn" class="menu-btn secondary" type="button">DECLINE</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="shop-ui" class="hidden overlay-full shop-ui">
+            <header class="shop-header">
+                <div>
+                    <h2>CHALK MARKET</h2>
+                    <p id="shop-guidance" class="subtitle">Build your next trick.</p>
+                </div>
+                <div class="shop-wallet">
+                    <span>CHALK</span>
+                    <strong id="shop-wallet-total">000</strong>
+                </div>
+            </header>
+            <section class="shop-loadout">
+                <div class="label">ACTIVE MODS</div>
+                <div id="shop-active-mods" class="shop-active-mods"></div>
+            </section>
+            <div id="shop-items" class="shop-grid"></div>
+            <footer class="cart-footer">
+                <div class="cart-summary">
+                    <div class="label">TRANSACTION TOTAL</div>
+                    <div id="cart-total" class="cart-total">0 CHALK</div>
+                    <div id="projected-balance" class="balance">Remaining: 000</div>
+                </div>
+                <button id="reroll-btn" class="menu-btn">REROLL 15</button>
+                <button id="checkout-btn" class="menu-btn primary">FINALIZE</button>
+            </footer>
+        </section>
+
+        <section id="tutorial-ui" class="hidden overlay-full tutorial-ui">
+            <header class="tutorial-header">
+                <h2>HOW TO PLAY</h2>
+                <p>Learn by doing: pick the route, line up a real shot, buy nonsense, then leave before the table gets ideas.</p>
+            </header>
+            <div class="tutorial-shell">
+                <section class="tutorial-stage" aria-live="polite">
+                    <article class="tutorial-scene" data-scene="route">
+                        <div class="tutorial-copy">
+                            <span>1 // ROUTE</span>
+                            <h3>Pick a glowing node</h3>
+                            <p>Each sector is one table. Bosses wait every 3 sectors.</p>
+                        </div>
+                        <div class="tutorial-route-board">
+                            <div id="tutorial-map-preview" class="tutorial-map-preview"></div>
+                            <div class="tutorial-route-note">
+                                <b>GLOWING = OPEN</b>
+                                <span>Choose one connected table, then play it.</span>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="tutorial-scene" data-scene="shot">
+                        <div class="tutorial-copy">
+                            <span>2 // SHOT</span>
+                            <h3>Drag, aim, release</h3>
+                            <p>Sink the practice ball, then try a bank shot. The timer is fake here. Enjoy that while it lasts.</p>
+                        </div>
+                        <div class="tutorial-practice-wrap">
+                            <div class="tutorial-practice-hud"><span>TIME <b>09</b></span><span>TARGETS <b>2</b></span></div>
+                            <div class="tutorial-practice" data-tutorial-practice>
+                                <canvas id="tutorial-practice-canvas" class="tutorial-practice-canvas" width="800" height="450"></canvas>
+                            </div>
+                            <div class="tutorial-practice-footer">
+                                <em>DRAG AND RELEASE</em>
+                                <div class="tutorial-power"><span>POWER</span><b></b></div>
+                            </div>
+                        </div>
+                    </article>
+                    <article class="tutorial-scene" data-scene="shop">
+                        <div class="tutorial-copy">
+                            <span>3 // CHALK</span>
+                            <h3>Buy something weird</h3>
+                            <p>Targets pay chalk. Banks, combos, and hot pockets pay more.</p>
+                        </div>
+                        <div class="tutorial-market">
+                            <div class="tutorial-wallet"><span>CHALK</span><b>100</b></div>
+                            <button type="button" data-tutorial-cost="20"><b>+ TIME</b><small>20 chalk // safer tables</small></button>
+                            <button type="button" data-tutorial-cost="65"><b>FIRE BALL</b><small>65 chalk // rare power</small></button>
+                            <button type="button" data-tutorial-cost="40"><b>BIG POCKETS</b><small>40 chalk // easier sinks</small></button>
+                        </div>
+                    </article>
+                    <article class="tutorial-scene" data-scene="progress">
+                        <div class="tutorial-copy">
+                            <span>4 // PROGRESS</span>
+                            <h3>That was normal</h3>
+                            <p>The tutorial was normal. That will not happen again. Achievements give Style Points, and wins unlock relics, boss variants, and harder Ruin routes.</p>
+                        </div>
+                        <div class="tutorial-reward-board">
+                            <span><b>STYLE POINTS</b><small>Unlock balls, felt, rails, and backgrounds.</small></span>
+                            <span><b>RELICS</b><small>New run starters after clears.</small></span>
+                            <span><b>RUIN</b><small>Harder routes when you win.</small></span>
+                            <span><b>ACHIEVEMENTS</b><small>Mark your best moments and award Style Points.</small></span>
+                        </div>
+                    </article>
+                </section>
+                <aside class="tutorial-lessons" aria-label="Tutorial lessons">
+                    <button type="button" data-tutorial-step="route"><span>01</span><b>Route</b><small>choose the next table</small></button>
+                    <button type="button" data-tutorial-step="shot"><span>02</span><b>Shoot</b><small>drag for aim and power</small></button>
+                    <button type="button" data-tutorial-step="shop"><span>03</span><b>Upgrade</b><small>spend chalk</small></button>
+                    <button type="button" data-tutorial-step="progress"><span>04</span><b>Progress</b><small>cosmetics and relics</small></button>
+                </aside>
+            </div>
+            <div class="tutorial-actions">
+                <button type="button" class="menu-btn secondary" data-tutorial-prev>BACK</button>
+                <button type="button" class="menu-btn" data-tutorial-next>NEXT</button>
+                <button id="tutorial-continue-btn" class="menu-btn primary">START RUN</button>
+            </div>
+        </section>
+
+        <section id="round-over-ui" class="hidden overlay-full round-over-ui">
+            <div id="round-celebration" class="round-celebration hidden" aria-hidden="true"></div>
+            <h2>ROUND OVER</h2>
+            <aside id="round-tip" class="gameplay-tip hidden" data-tip-panel>
+                <span>TIP</span>
+                <p data-tip-text></p>
+                <button type="button" data-hide-tips>HIDE TIPS</button>
+            </aside>
+            <div id="round-summary" class="round-summary"></div>
+            <button id="round-continue-btn" class="menu-btn primary">CONTINUE</button>
+        </section>
+
+        <section id="map-ui" class="hidden overlay-full map-ui">
+            <h2>ROUTE MAP</h2>
+            <p id="map-subtitle" class="subtitle"></p>
+            <aside id="map-tip" class="gameplay-tip hidden" data-tip-panel>
+                <span>TIP</span>
+                <p data-tip-text></p>
+                <button type="button" data-hide-tips>HIDE TIPS</button>
+            </aside>
+            <div id="map-detail" class="map-detail" aria-live="polite"></div>
+            <div id="map-nodes" class="map-nodes"></div>
+        </section>
+
+        <section id="event-ui" class="hidden overlay-full event-ui">
+            <div class="event-status">
+                <span id="event-round">ROUND 1 / 12</span>
+                <span id="event-chalk">100 CHALK</span>
+            </div>
+            <div id="event-figure" class="event-figure">?</div>
+            <h2 id="event-title">THE BACK-ALLEY BOOKIE</h2>
+            <p id="event-description"></p>
+            <div id="event-options" class="event-options"></div>
+            <div id="event-result" class="event-result hidden"></div>
+            <button id="event-continue-btn" class="menu-btn primary hidden">CONTINUE</button>
+        </section>
+
+        <section id="treasure-ui" class="hidden overlay-full treasure-ui">
+            <div class="treasure-status">
+                <span id="treasure-round">ROUND 1 / 12</span>
+                <span id="treasure-chalk">100 CHALK</span>
+            </div>
+            <div class="treasure-machine" aria-live="polite">
+                <div class="treasure-marquee">
+                    <span>LOCKER ROOM JACKPOT</span>
+                    <strong id="treasure-title">THE CHALK CACHE</strong>
+                </div>
+                <p id="treasure-description">A brass-rimmed chest rattles under the table light. Pull once. Whatever lines up goes straight into your next shop.</p>
+                <div id="treasure-reels" class="treasure-reels" aria-label="Treasure slot reels"></div>
+                <div id="treasure-result" class="treasure-result">Match chalk cubes for money. Match pool balls for a shop favor.</div>
+                <div class="treasure-actions">
+                    <button id="treasure-spin-btn" class="treasure-lever-btn" type="button">
+                        <span class="treasure-lever-panel">
+                            <span class="treasure-lever-copy">PULL</span>
+                        </span>
+                        <span class="treasure-lever-arm" aria-hidden="true">
+                            <span class="treasure-lever-slot"></span>
+                            <span class="treasure-lever-stem"></span>
+                            <span class="treasure-lever-handle"></span>
+                        </span>
+                    </button>
+                    <button id="treasure-shop-btn" class="menu-btn hidden" type="button">ENTER SHOP</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="boss-intro-ui" class="hidden overlay-full boss-intro-ui">
+            <div class="boss-sigil" id="boss-sigil">✦</div>
+            <h2 id="boss-intro-title">BOSS TABLE</h2>
+            <p id="boss-intro-description"></p>
+            <div id="boss-intro-rule" class="boss-rule"></div>
+            <button id="boss-start-btn" class="menu-btn primary">BREAK</button>
+        </section>
+
+        <section id="game-over-ui" class="hidden overlay-full game-over-ui">
+            <h2 id="game-over-title">RUN ENDED</h2>
+            <p id="game-over-summary"></p>
+            <aside id="game-over-tip" class="gameplay-tip hidden" data-tip-panel>
+                <span>TIP</span>
+                <p data-tip-text></p>
+                <button type="button" data-hide-tips>HIDE TIPS</button>
+            </aside>
+            <div id="game-over-stats" class="game-over-stats"></div>
+            <div id="daily-result-card" class="daily-result-card hidden"></div>
+            <div id="game-over-map" class="game-over-map"></div>
+            <div id="game-over-rewards" class="game-over-rewards hidden"></div>
+            <div class="game-over-actions">
+                <button id="restart-run-btn" class="menu-btn primary">TRY AGAIN</button>
+                <button id="game-over-menu-btn" class="menu-btn">MAIN MENU</button>
+            </div>
+        </section>
+
+        <section id="trophy-ui" class="hidden overlay-full trophy-ui">
+            <div class="trophy-header">
+                <div>
+                    <h2>ACHIEVEMENTS</h2>
+                    <p class="subtitle">Every achievement is worth 5 Style Points. Earned achievements sync to platform services when available.</p>
+                </div>
+                <button id="trophy-back-btn" class="menu-btn primary">BACK</button>
+            </div>
+            <div class="achievement-progress" aria-label="Achievement progress">
+                <div class="achievement-progress-copy">
+                    <span id="trophy-progress-label">0 / 0 EARNED</span>
+                    <strong id="trophy-progress-percent">0%</strong>
+                </div>
+                <div class="achievement-progress-track"><span id="trophy-progress-fill"></span></div>
+            </div>
+            <div class="trophy-scroll">
+                <div id="trophy-grid" class="trophy-grid"></div>
+            </div>
+        </section>
+
+        <section id="relic-ui" class="hidden overlay-full relic-ui">
+            <div class="relic-header">
+                <div>
+                    <h2>RELIC SHELF</h2>
+                    <p class="subtitle">Choose one keepsake before the run. Locked relics show what they do and how to earn them.</p>
+                </div>
+                <button id="relic-back-btn" class="menu-btn primary">BACK</button>
+            </div>
+            <div class="relic-scroll">
+                <div id="relic-grid" class="relic-grid"></div>
+            </div>
+        </section>
+
+        <section id="cosmetics-ui" class="hidden overlay-full cosmetics-ui">
+            <div class="cosmetics-header">
+                <div>
+                    <h2>CUSTOMIZE TABLE</h2>
+                    <p id="cosmetics-points-help" class="cosmetics-points-help">Achievements give 5 Style Points each.</p>
+                </div>
+                <div class="cosmetics-header-actions">
+                    <div class="cosmetics-points-row">
+                        <strong id="cosmetics-points">0 STYLE POINTS</strong>
+                        <button id="cosmetics-tutorial-replay-btn" class="cosmetics-tutorial-replay" type="button" aria-label="How Style Points work" title="How Style Points work">?</button>
+                    </div>
+                    <button id="cosmetics-back-btn" class="menu-btn primary">BACK</button>
+                </div>
+            </div>
+            <div class="cosmetics-layout">
+                <aside class="cosmetics-preview-panel">
+                    <canvas id="cosmetics-preview" width="800" height="450"></canvas>
+                </aside>
+                <section class="cosmetics-browser">
+                    <div id="cosmetics-tabs" class="cosmetics-tabs" role="tablist" aria-label="Cosmetic categories"></div>
+                    <p id="cosmetics-status" class="cosmetics-status" aria-live="polite"></p>
+                    <div id="cosmetics-grid" class="cosmetics-grid"></div>
+                </section>
+            </div>
+            <div id="cosmetics-tutorial" class="cosmetics-tutorial hidden" role="dialog" aria-modal="true" aria-labelledby="cosmetics-tutorial-title">
+                <div class="cosmetics-tutorial-card">
+                    <div class="cosmetics-tutorial-spark cosmetics-tutorial-spark-a">✦</div>
+                    <div class="cosmetics-tutorial-spark cosmetics-tutorial-spark-b">✦</div>
+                    <p class="cosmetics-tutorial-kicker">WELCOME TO YOUR TABLE</p>
+                    <h3 id="cosmetics-tutorial-title">STYLE POINTS, EASY.</h3>
+                    <div class="cosmetics-tutorial-flow" aria-label="Play to earn achievements, achievements earn Style Points, Style Points unlock cosmetics">
+                        <article class="cosmetics-tutorial-step">
+                            <span class="cosmetics-tutorial-icon">▶</span>
+                            <strong>PLAY</strong>
+                            <small>Make runs. Do cool pool stuff.</small>
+                        </article>
+                        <span class="cosmetics-tutorial-arrow" aria-hidden="true">→</span>
+                        <article class="cosmetics-tutorial-step">
+                            <span class="cosmetics-tutorial-icon">★</span>
+                            <strong>EARN</strong>
+                            <small>Achievements award Style Points.</small>
+                        </article>
+                        <span class="cosmetics-tutorial-arrow" aria-hidden="true">→</span>
+                        <article class="cosmetics-tutorial-step accent">
+                            <span class="cosmetics-tutorial-icon">✦</span>
+                            <strong>STYLE</strong>
+                            <small>Spend points on any cosmetic, any order.</small>
+                        </article>
+                    </div>
+                    <p class="cosmetics-tutorial-note"><span>⌂</span> Your cosmetics are yours only. Other players keep their own table style.</p>
+                    <button id="cosmetics-tutorial-close-btn" class="menu-btn primary cosmetics-tutorial-close" type="button">LET'S STYLE</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="legend-ui" class="hidden overlay-full legend-ui">
+            <div class="legend-header">
+                <div>
+                    <h2>LEGEND</h2>
+                    <p id="legend-subtitle" class="subtitle">A chalkboard record of what the table has revealed.</p>
+                </div>
+                <button id="legend-back-btn" class="menu-btn primary">BACK</button>
+            </div>
+            <div id="legend-tabs" class="legend-tabs" role="tablist" aria-label="Legend categories">
+                <button class="selected" type="button" data-legend-tab="upgrades">UPGRADES</button>
+                <button type="button" data-legend-tab="bosses">BOSSES</button>
+                <button type="button" data-legend-tab="events">EVENTS</button>
+                <button type="button" data-legend-tab="relics">RELICS</button>
+            </div>
+            <div id="legend-scroll" class="legend-scroll">
+                <div id="legend-grid" class="legend-grid"></div>
+            </div>
+        </section>
+
+        <section id="pause-ui" class="hidden pause-ui">
+            <h2>PAUSED</h2>
+            <div class="pause-actions">
+                <button id="resume-run-btn" class="menu-btn primary">RESUME</button>
+                <button id="pause-settings-btn" class="menu-btn" data-open-player-settings type="button">SETTINGS</button>
+                <button id="restart-from-pause-btn" class="menu-btn">RESTART RUN</button>
+                <button id="pause-achievements-btn" class="menu-btn">ACHIEVEMENTS</button>
+                <button id="return-menu-btn" class="menu-btn">MAIN MENU</button>
+                <button id="pause-quit-btn" class="menu-btn native-only hidden">QUIT GAME</button>
+            </div>
+            <div id="pause-save-slots" class="pause-save-slots" aria-label="Save current roguelike run">
+                <span>SAVE RUN</span>
+                <button type="button" data-save-slot="0">SLOT 1</button>
+                <button type="button" data-save-slot="1">SLOT 2</button>
+                <button type="button" data-save-slot="2">SLOT 3</button>
+            </div>
+            <div id="pause-save-status" class="pause-save-status" aria-live="polite"></div>
+            <button id="pause-seed-copy" class="menu-btn pause-seed-copy" type="button" data-tooltip-title="COPY SEED" data-tooltip-body="Copy this run seed to the clipboard.">COPY SEED <span id="pause-seed-value">RANDOM</span></button>
+        </section>
+
+        <section id="quit-confirm-ui" class="hidden quit-confirm-ui">
+            <h2 id="quit-confirm-title">QUIT GAME?</h2>
+            <p id="quit-confirm-copy">Leave Rack & Ruin and close the game?</p>
+            <div>
+                <button id="confirm-quit-btn" class="menu-btn primary">QUIT</button>
+                <button id="cancel-quit-btn" class="menu-btn">CANCEL</button>
+            </div>
+        </section>
+
+        <section id="restart-confirm-ui" class="hidden quit-confirm-ui">
+            <h2 id="restart-confirm-title">RESTART RUN?</h2>
+            <p id="restart-confirm-copy">Throw away this run and start again?</p>
+            <div>
+                <button id="confirm-restart-btn" class="menu-btn primary">YES</button>
+                <button id="cancel-restart-btn" class="menu-btn">NO</button>
+            </div>
+        </section>
+
+        <section id="save-overwrite-confirm-ui" class="hidden quit-confirm-ui save-overwrite-confirm-ui">
+            <h2>OVERWRITE SLOT?</h2>
+            <p id="save-overwrite-copy">That slot already has a saved run.</p>
+            <div>
+                <button id="confirm-save-overwrite-btn" class="menu-btn primary">OVERWRITE</button>
+                <button id="cancel-save-overwrite-btn" class="menu-btn">CANCEL</button>
+            </div>
+        </section>
+
+    </main>
+
+    <section id="scene-intro" class="hidden scene-intro" aria-live="polite">
+        <div id="scene-round">ROUND 1</div>
+        <strong id="scene-callout">GET READY</strong>
+        <p id="scene-tip" class="scene-tip hidden"></p>
+    </section>
+
+    <script type="module" src="./assets/main.js"></script>
+</body>
+</html>
