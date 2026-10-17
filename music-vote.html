@@ -14,20 +14,25 @@
         <header class="music-poll-hero">
             <p class="eyebrow">RACK &amp; RUIN // MUSIC SHORTLIST</p>
             <h1>Which one belongs<br>on the felt?</h1>
-            <p class="lede">Listen to the official previews, then give every track you would genuinely want in the game a thumbs-up.</p>
+            <p class="lede">Stream any audition track when you’re ready, then give every track you’d want in the game a thumbs-up.</p>
             <div class="poll-rules" aria-label="Voting rules">
+                <span>PLAY ON DEMAND</span>
                 <span>ONE VOTE PER TRACK</span>
                 <span>VOTE FOR AS MANY AS YOU LIKE</span>
-                <span>PREVIEWS STAY WITH THE ARTIST</span>
             </div>
         </header>
 
         <section class="poll-toolbar" aria-label="Poll status">
             <p id="poll-status" role="status">Loading the current vote totals…</p>
-            <button id="reload-votes" type="button">REFRESH TOTALS</button>
+            <div class="toolbar-actions">
+                <span id="filter-summary">Showing every audition track.</span>
+                <a id="filter-unvoted" href="./music-vote.html?hide-unvoted=1">HIDE TRACKS WITH NO VOTES</a>
+                <button id="reload-votes" type="button">REFRESH TOTALS</button>
+            </div>
         </section>
 
         <section id="candidate-grid" class="candidate-grid" aria-label="Music candidates"></section>
+        <p id="empty-filter-state" class="empty-filter-state" hidden>No tracks have votes yet. <a href="./music-vote.html">Show all tracks</a>.</p>
     </main>
 
     <template id="candidate-template">
@@ -36,18 +41,16 @@
             <div class="candidate-copy">
                 <p class="candidate-source"></p>
                 <h2></h2>
-                <p class="candidate-note"></p>
             </div>
             <div class="candidate-actions">
-                <button class="preview-toggle" type="button" aria-expanded="false">LISTEN HERE</button>
-                <a class="source-link" target="_blank" rel="noreferrer">OPEN OFFICIAL PREVIEW <span aria-hidden="true">↗</span></a>
+                <button class="preview-toggle" type="button" aria-pressed="false">LISTEN / STREAM</button>
                 <button class="vote-button" type="button" aria-pressed="false">
                     <span class="thumb" aria-hidden="true">👍</span>
                     <span class="vote-label">VOTE</span>
                     <b class="vote-count">0</b>
                 </button>
             </div>
-            <div class="preview-slot" hidden></div>
+            <div class="preview-slot" hidden><audio controls preload="none"></audio></div>
         </article>
     </template>
 
