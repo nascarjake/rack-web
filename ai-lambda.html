@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rack & Ruin AI Lambda Atlas</title>
+    <link rel="icon" type="image/png" href="./build-resources/icon.png">
+    <link rel="stylesheet" href="./src/styles/fonts.css">
+    <link rel="stylesheet" href="./src/styles/ai-lambda.css">
+</head>
+<body>
+    <main class="atlas-shell">
+        <header class="atlas-header">
+            <div>
+                <p class="eyebrow">Rack &amp; Ruin classic opponent</p>
+                <h1>AI Lambda Atlas</h1>
+            </div>
+            <a class="source-link" href="./index.html">Back to game</a>
+        </header>
+
+        <section class="workspace" aria-label="Interactive AI lambda diagrams">
+            <nav class="function-rail" aria-label="AI functions">
+                <button class="function-tab active" type="button" data-function="turn">Turn pipeline</button>
+                <button class="function-tab" type="button" data-function="targets">Legal targets</button>
+                <button class="function-tab" type="button" data-function="picker">Shot picker</button>
+                <button class="function-tab" type="button" data-function="clearance">Path clearance</button>
+                <button class="function-tab" type="button" data-function="difficulty">Difficulty noise</button>
+            </nav>
+
+            <section class="diagram-stage">
+                <div class="stage-topline">
+                    <div>
+                        <p id="function-source" class="source-chip">src/core/Game.js:7102</p>
+                        <h2 id="function-title">takeAiShot</h2>
+                    </div>
+                    <div class="controls" aria-label="Diagram controls">
+                        <label for="difficulty-select">
+                            Difficulty
+                            <select id="difficulty-select" aria-label="Difficulty">
+                                <option value="casual">Casual</option>
+                                <option value="sharp">Sharp</option>
+                                <option value="mean">Mean</option>
+                            </select>
+                        </label>
+                        <button id="pulse-btn" type="button">Pulse flow</button>
+                    </div>
+                </div>
+
+                <div id="term-line" class="term-line" aria-live="polite"></div>
+                <div class="svg-wrap">
+                    <svg id="diagram" viewBox="0 0 920 520" role="img" aria-labelledby="function-title"></svg>
+                </div>
+            </section>
+
+            <aside class="inspector" aria-live="polite">
+                <p class="eyebrow">Hovered part</p>
+                <h3 id="part-title">Full turn pipeline</h3>
+                <p id="part-body">The AI waits for a quiet table, chooses legal targets, picks a candidate shot, applies difficulty noise, and launches the cue ball.</p>
+                <dl id="part-facts"></dl>
+            </aside>
+        </section>
+
+        <section class="legend-band" aria-label="Tromp diagram legend">
+            <div class="legend-item"><span class="legend-dot lambda"></span><strong>lambda</strong><p>Abstraction. It binds an input name used downstream.</p></div>
+            <div class="legend-item"><span class="legend-dot apply"></span><strong>apply</strong><p>Application. A function is fed an argument and produces a value.</p></div>
+            <div class="legend-item"><span class="legend-dot value"></span><strong>value</strong><p>Game state, geometry, rules, random numbers, or shot output.</p></div>
+            <div class="legend-item"><span class="legend-line"></span><strong>wire</strong><p>Hover any wire to see which idea is travelling through the term.</p></div>
+        </section>
+    </main>
+
+    <script type="module" src="./assets/ai-lambda.js"></script>
+</body>
+</html>

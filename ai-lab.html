@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rack & Ruin AI Lab</title>
+    <link rel="icon" type="image/png" href="./build-resources/icon.png">
+    <link rel="stylesheet" href="./src/styles/fonts.css">
+    <link rel="stylesheet" href="./src/styles/ai-lab.css">
+</head>
+<body>
+    <main class="lab-shell">
+        <header class="lab-header">
+            <div>
+                <p class="eyebrow">Rack &amp; Ruin automated playtest</p>
+                <h1>AI Lab</h1>
+            </div>
+            <nav class="header-actions" aria-label="AI Lab links">
+                <a href="./index.html">Game</a>
+            </nav>
+        </header>
+
+        <section class="control-band" aria-label="Simulation controls">
+            <label>
+                Policy
+                <select id="policy-select">
+                    <option value="survival">Survivalist</option>
+                    <option value="greedy">Greedy Optimizer</option>
+                    <option value="combo">Combo Chaser</option>
+                    <option value="cheap">Bargain Hunter</option>
+                    <option value="random">Random</option>
+                </select>
+            </label>
+            <label>
+                Runs
+                <input id="runs-input" type="number" min="25" max="2000" step="25" value="250">
+            </label>
+            <label>
+                Seed
+                <input id="seed-input" maxlength="24" value="VIDEO-1">
+            </label>
+            <label>
+                Ruin
+                <input id="ruin-input" type="number" min="0" max="6" value="0">
+            </label>
+            <label>
+                Show Runs
+                <input id="population-input" type="number" min="25" max="500" step="25" value="100">
+            </label>
+            <button id="run-button" type="button">Run Strategy Scan</button>
+        </section>
+
+        <section class="hero-grid" aria-label="AI Lab overview">
+            <article class="table-card">
+                <div class="section-title">
+                    <div>
+                    <p class="eyebrow">Recorded fixed-step table</p>
+                    <h2 id="timelapse-title">Physics Replay</h2>
+                    </div>
+                    <button id="replay-button" type="button">Replay</button>
+                </div>
+                <canvas id="timelapse-canvas" width="960" height="540" aria-label="Recorded real physics replay"></canvas>
+                <div id="run-caption" class="run-caption"></div>
+            </article>
+
+            <aside class="scoreboard" aria-label="Simulation summary">
+                <div class="stat-tile">
+                    <span>Win Rate</span>
+                    <strong id="win-rate">--</strong>
+                </div>
+                <div class="stat-tile">
+                    <span>Average Depth</span>
+                    <strong id="average-depth">--</strong>
+                </div>
+                <div class="stat-tile">
+                    <span>Average Chalk</span>
+                    <strong id="average-chalk">--</strong>
+                </div>
+                <div class="callout" id="proxy-callout">
+                    The table above is a real fixed-step physics replay. The report below is a strategic hypothesis tool, not balance proof; suspicious builds still need a real-table run.
+                </div>
+            </aside>
+        </section>
+
+        <section class="lab-grid" aria-label="Detailed AI Lab panels">
+            <article class="panel wide">
+                <div class="section-title">
+                    <div>
+                    <p class="eyebrow">Strategic hypothesis sample</p>
+                    <h2>Route Distribution</h2>
+                    </div>
+                    <span id="population-label">proxy data, sorted by depth</span>
+                </div>
+                <canvas id="population-canvas" width="1000" height="560" aria-label="100 simulated runs"></canvas>
+            </article>
+
+            <article class="panel">
+                <p class="eyebrow">Proxy correlation</p>
+                <h2>Win-Associated Items</h2>
+                <ol id="top-items" class="rank-list"></ol>
+            </article>
+
+            <article class="panel">
+                <p class="eyebrow">Low agent preference</p>
+                <h2>Underpicked Signals</h2>
+                <ol id="missed-items" class="rank-list"></ol>
+            </article>
+
+            <article class="panel">
+                <p class="eyebrow">Needs physical test</p>
+                <h2>Possible Traps</h2>
+                <ol id="trap-items" class="rank-list"></ol>
+            </article>
+
+            <article class="panel">
+                <p class="eyebrow">Where agents die</p>
+                <h2>Failure Reasons</h2>
+                <div id="failure-bars" class="bar-list"></div>
+            </article>
+
+            <article class="panel">
+                <p class="eyebrow">Selected failure</p>
+                <h2>Failure Inspector</h2>
+                <div id="failure-detail" class="detail-card"></div>
+            </article>
+
+            <article class="panel">
+                <p class="eyebrow">Run path</p>
+                <h2>Timelapse Events</h2>
+                <div id="timeline-list" class="timeline-list"></div>
+            </article>
+        </section>
+    </main>
+
+    <script type="module" src="./assets/ai-lab.js"></script>
+</body>
+</html>

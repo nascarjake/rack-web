@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#101410">
+    <title>Rack & Ruin — Music Vote</title>
+    <link rel="icon" type="image/png" href="./build-resources/icon.png">
+    <link rel="stylesheet" href="./src/styles/fonts.css">
+    <link rel="stylesheet" href="./src/styles/music-vote.css">
+</head>
+<body>
+    <main class="music-poll-shell">
+        <header class="music-poll-hero">
+            <p class="eyebrow">RACK &amp; RUIN // MUSIC SHORTLIST</p>
+            <h1>Which one belongs<br>on the felt?</h1>
+            <p class="lede">Listen to the official previews, then give every track you would genuinely want in the game a thumbs-up.</p>
+            <div class="poll-rules" aria-label="Voting rules">
+                <span>ONE VOTE PER TRACK</span>
+                <span>VOTE FOR AS MANY AS YOU LIKE</span>
+                <span>PREVIEWS STAY WITH THE ARTIST</span>
+            </div>
+        </header>
+
+        <section class="poll-toolbar" aria-label="Poll status">
+            <p id="poll-status" role="status">Loading the current vote totals…</p>
+            <button id="reload-votes" type="button">REFRESH TOTALS</button>
+        </section>
+
+        <section id="candidate-grid" class="candidate-grid" aria-label="Music candidates"></section>
+    </main>
+
+    <template id="candidate-template">
+        <article class="candidate-card">
+            <div class="candidate-number"></div>
+            <div class="candidate-copy">
+                <p class="candidate-source"></p>
+                <h2></h2>
+                <p class="candidate-note"></p>
+            </div>
+            <div class="candidate-actions">
+                <button class="preview-toggle" type="button" aria-expanded="false">LISTEN HERE</button>
+                <a class="source-link" target="_blank" rel="noreferrer">OPEN OFFICIAL PREVIEW <span aria-hidden="true">↗</span></a>
+                <button class="vote-button" type="button" aria-pressed="false">
+                    <span class="thumb" aria-hidden="true">👍</span>
+                    <span class="vote-label">VOTE</span>
+                    <b class="vote-count">0</b>
+                </button>
+            </div>
+            <div class="preview-slot" hidden></div>
+        </article>
+    </template>
+
+    <script type="module" src="./assets/music-vote.js"></script>
+</body>
+</html>
