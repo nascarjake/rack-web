@@ -15,12 +15,11 @@
     <meta name="apple-mobile-web-app-title" content="Rack & Ruin">
     <script src="./src/vendor/Tone.js" defer></script>
     <link rel="stylesheet" href="./src/styles/fonts.css">
-    <link rel="stylesheet" href="./src/styles/game.css?v=player-settings-v2">
+    <link rel="stylesheet" href="./src/styles/game.css?v=rolling-default-v1">
 </head>
 <body data-theme="chalkboard">
     <section id="studio-splash" class="studio-splash">
         <img src="./src/assets/branding/goose-games-logo.png" alt="Goose Games">
-        <button id="studio-splash-audio-prompt" class="studio-splash-audio-prompt hidden" type="button">CLICK / TAP TO HEAR THE HONK</button>
     </section>
     <section id="desktop-title-screen" class="desktop-title-screen" aria-label="Rack and Ruin title screen">
         <div class="desktop-title-frame" aria-hidden="true">
@@ -45,6 +44,7 @@
                     <img class="desktop-title-rack" src="./src/assets/Assets/triangle.png" alt="">
                     <span class="desktop-title-eight-orb">
                         <img class="desktop-title-eight" src="./src/assets/Assets/svgs/ball_8.svg" alt="">
+                        <span class="desktop-title-eight-glint"></span>
                     </span>
                 </span>
                 <span class="desktop-title-wordmark">
@@ -957,6 +957,11 @@
             <div class="cosmetics-layout">
                 <aside class="cosmetics-preview-panel">
                     <canvas id="cosmetics-preview" width="800" height="450"></canvas>
+                    <canvas id="cosmetics-detail-preview" width="800" height="300" aria-label="Ball skin close-up"></canvas>
+                    <div class="cosmetics-preview-actions">
+                        <button id="cosmetics-markers-toggle" class="cosmetics-markers-toggle" type="button" aria-pressed="true" title="Show classic color and solid/stripe markings printed on custom ball textures">CLASSIC MARKERS ON</button>
+                        <button id="cosmetics-preview-zoom" class="cosmetics-preview-zoom" type="button" aria-pressed="false">ENLARGE PREVIEW</button>
+                    </div>
                 </aside>
                 <section class="cosmetics-browser">
                     <div id="cosmetics-tabs" class="cosmetics-tabs" role="tablist" aria-label="Cosmetic categories"></div>
